@@ -63,4 +63,10 @@ public class CmsPageController implements CmsPageControllerApi {
     public CmsPage findById(@PathVariable String id) {
         return pageService.findById(id);
     }
+
+    @Override
+    @DeleteMapping("/del/{id}")
+    public ResponseResult deleteById(@PathVariable String id) {
+        return pageService.deleteById(id);
+    }
 }

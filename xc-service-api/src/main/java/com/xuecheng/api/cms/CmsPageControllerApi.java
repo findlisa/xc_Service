@@ -4,6 +4,7 @@ import com.xuecheng.framework.domain.cms.CmsPage;
 import com.xuecheng.framework.domain.cms.request.QueryPageRequest;
 import com.xuecheng.framework.domain.cms.response.CmsPageResult;
 import com.xuecheng.framework.model.response.QueryResponseResult;
+import com.xuecheng.framework.model.response.ResponseResult;
 import io.swagger.annotations.ApiOperation;
 
 public interface CmsPageControllerApi {
@@ -19,4 +20,7 @@ public interface CmsPageControllerApi {
 
     @ApiOperation("根据id查询信息")
     CmsPage findById(String id);
+
+    @ApiOperation("删除信息")
+    ResponseResult deleteById(String id);
 }
