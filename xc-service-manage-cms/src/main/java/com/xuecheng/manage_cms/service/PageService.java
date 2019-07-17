@@ -2,7 +2,9 @@ package com.xuecheng.manage_cms.service;
 
 import com.xuecheng.framework.domain.cms.CmsPage;
 import com.xuecheng.framework.domain.cms.request.QueryPageRequest;
+import com.xuecheng.framework.domain.cms.response.CmsCode;
 import com.xuecheng.framework.domain.cms.response.CmsPageResult;
+import com.xuecheng.framework.exception.ExceptionCast;
 import com.xuecheng.framework.model.response.CommonCode;
 import com.xuecheng.framework.model.response.QueryResponseResult;
 import com.xuecheng.framework.model.response.QueryResult;
@@ -77,7 +79,7 @@ public class PageService {
         return queryResponseResult;
     }
 
-    //新增页面
+   /* //新增页面
     public CmsPageResult save(CmsPage cmsPage) {
         //调用dao新增页面
         //查看是否重复
@@ -91,7 +93,25 @@ public class PageService {
         }
         cmsPageResult=new CmsPageResult(CommonCode.FAIL,null);
         return cmsPageResult;
-    }
+    }*/
+   //新增页面,加入了异常处理
+   public CmsPageResult save(CmsPage cmsPage) {
+
+       //调用dao新增页面
+       //查看是否重复
+       CmsPageResult cmsPageResult;
+       CmsPage page = cmsPageRepository.findByPageNameAndSiteIdAndPageWebPath
+               (cmsPage.getPageName(), cmsPage.getSiteId(), cmsPage.getPageWebPath());
+       if(page!=null){
+           //进行自定义异常处理
+           ExceptionCast.cast(CmsCode.CMS_ADDPAGE_EXISTSNAME);
+       }
+       cmsPageRepository.save(cmsPage);
+       cmsPageResult=new CmsPageResult(CommonCode.SUCCESS,cmsPage);
+       return cmsPageResult;
+
+
+   }
 
     //修改页面
 
