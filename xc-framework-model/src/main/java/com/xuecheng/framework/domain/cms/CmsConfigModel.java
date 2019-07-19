@@ -14,7 +14,7 @@ public class CmsConfigModel {
     private String key;
     private String name;
     private String url;
-    private Map mapValue;
-    private String value;
+    private Map mapValue;//项目复杂值
+    private String value;//项目简单值
 
 }
