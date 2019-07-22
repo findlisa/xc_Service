@@ -9,6 +9,7 @@ import java.util.Optional;
 
 @Service
 public class CmsConfigService {
+
     @Autowired
     CmsConfigRepository cmsConfigRepository;
     public CmsConfig getConfigById(String id){

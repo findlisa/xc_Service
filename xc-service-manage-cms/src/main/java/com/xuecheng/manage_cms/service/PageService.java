@@ -1,5 +1,6 @@
 package com.xuecheng.manage_cms.service;
 
+import com.alibaba.fastjson.JSON;
 import com.mongodb.client.gridfs.GridFSBucket;
 import com.mongodb.client.gridfs.GridFSDownloadStream;
 import com.mongodb.client.gridfs.model.GridFSFile;
@@ -13,6 +14,7 @@ import com.xuecheng.framework.model.response.CommonCode;
 import com.xuecheng.framework.model.response.QueryResponseResult;
 import com.xuecheng.framework.model.response.QueryResult;
 import com.xuecheng.framework.model.response.ResponseResult;
+import com.xuecheng.manage_cms.config.RabbitmqConfig;
 import com.xuecheng.manage_cms.dao.CmsPageRepository;
 import com.xuecheng.manage_cms.dao.CmsTemplateRepository;
 import freemarker.cache.StringTemplateLoader;
@@ -20,6 +22,8 @@ import freemarker.template.Configuration;
 import freemarker.template.Template;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.bson.types.ObjectId;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -34,6 +38,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -52,6 +58,8 @@ public class PageService {
     GridFsTemplate gridFsTemplate;
     @Autowired//这个在config单独配置
     GridFSBucket gridFSBucket;
+    @Autowired
+    RabbitTemplate rabbitTemplate;
 
 
 
@@ -197,7 +205,7 @@ public class PageService {
         return new ResponseResult(CommonCode.FAIL);
     }
 
-    //页面静态化(要调用其他函数)
+    //页面静态化，实现预览功能(要调用其他函数)
     public String generateHtml(String pageId){
        //1.获取页面模型数据
         Map modelByPageId = this.getModelByPageId(pageId);
@@ -206,6 +214,21 @@ public class PageService {
         //3.执行静态化
         String html = this.generateHtml(templateByPageId, modelByPageId);
         return html;
+    }
+
+    //执行页面发布
+    public ResponseResult postPage(String pageId){
+       //1.执行页面静态化
+        String pageHtml = this.generateHtml(pageId);
+        if(StringUtils.isEmpty(pageHtml)){
+            ExceptionCast.cast(CmsCode.CMS_GENERATEHTML_HTMLISNULL);
+        }
+        //2.将静态文件保存到gridFS
+        CmsPage cmsPage = this.saveHtml(pageId, pageHtml);
+
+        //3.给队列发送消息，等待消费者消费
+        sendPostPage(pageId);
+        return new ResponseResult(CommonCode.SUCCESS);
     }
 
 //#######################################################################################上面是主要功能，下面是辅助函数
@@ -286,4 +309,45 @@ public class PageService {
         }
         return null;
     }
+
+    //保存静态页面内容
+    private CmsPage saveHtml(String pageId,String content){
+    //查询页面
+        Optional<CmsPage> optional = cmsPageRepository.findById(pageId);
+        if(!optional.isPresent()){
+            ExceptionCast.cast(CmsCode.CMS_PAGE_NOTEXISTS);
+        }
+        CmsPage cmsPage = optional.get();
+        //存储之前先删除
+        String htmlFileId = cmsPage.getHtmlFileId();
+        if(StringUtils.isNotEmpty(htmlFileId)){
+            gridFsTemplate.delete(Query.query(Criteria.where("_id").is(htmlFileId)));
+        }
+    //保存html文件到GridFS
+        InputStream inputStream = IOUtils.toInputStream(content);
+       //保存后会得到一个文件id值
+        ObjectId objectId = gridFsTemplate.store(inputStream, cmsPage.getPageName());
+    //文件id
+        String fileId = objectId.toString();
+    //将文件id存储到cmspage中
+        cmsPage.setHtmlFileId(fileId);
+        cmsPageRepository.save(cmsPage);
+        return cmsPage;
+    }
+    //发送页面消息，生产者生产消息
+    private void sendPostPage(String pageId){
+        CmsPage cmsPage = this.getById(pageId);
+        if(cmsPage == null){
+            ExceptionCast.cast(CmsCode.CMS_PAGE_NOTEXISTS);
+        }
+        Map<String,String> msgMap = new HashMap<>();
+        msgMap.put("pageId",pageId);
+        //消息内容
+        String msg = JSON.toJSONString(msgMap);
+        //获取站点id作为routingKey
+        String siteId = cmsPage.getSiteId();
+        //发布消息
+        rabbitTemplate.convertAndSend(RabbitmqConfig.EX_ROUTING_CMS_POSTPAGE,siteId, msg);
+    }
+
 }
