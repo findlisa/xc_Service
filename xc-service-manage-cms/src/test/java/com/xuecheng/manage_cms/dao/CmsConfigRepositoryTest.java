@@ -1,6 +1,7 @@
 package com.xuecheng.manage_cms.dao;
 
 import com.xuecheng.framework.domain.cms.CmsPage;
+import com.xuecheng.framework.domain.system.SysDictionary;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,9 @@ import java.util.Map;
 public class CmsConfigRepositoryTest {
     @Autowired
     RestTemplate restTemplate;
+
+
+
     @Test
     public void testRestTemplate(){
         ResponseEntity<Map> forEntity =
@@ -25,6 +29,5 @@ public class CmsConfigRepositoryTest {
                         Map.class);
         System.out.println(forEntity);
     }
-
 
 }

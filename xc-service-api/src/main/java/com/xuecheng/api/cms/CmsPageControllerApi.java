@@ -5,8 +5,10 @@ import com.xuecheng.framework.domain.cms.request.QueryPageRequest;
 import com.xuecheng.framework.domain.cms.response.CmsPageResult;
 import com.xuecheng.framework.model.response.QueryResponseResult;
 import com.xuecheng.framework.model.response.ResponseResult;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 
+@Api(value="cms页面管理接口",description = "cmsPage页面的增删改查")
 public interface CmsPageControllerApi {
     //页面查询
     @ApiOperation("页面查询")

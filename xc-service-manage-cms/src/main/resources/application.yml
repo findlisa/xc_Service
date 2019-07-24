@@ -13,6 +13,7 @@ spring:
     username: guest
     password: guest
     virtualHost: /
+
 xuecheng:
   mq:
     routingKey: 5a751fab6abb5044e0d19ea1	#此routingKey为门户站点ID
