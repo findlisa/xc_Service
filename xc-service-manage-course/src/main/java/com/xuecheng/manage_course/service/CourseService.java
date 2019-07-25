@@ -3,19 +3,18 @@ package com.xuecheng.manage_course.service;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.xuecheng.framework.domain.course.CourseBase;
+import com.xuecheng.framework.domain.course.CourseMarket;
 import com.xuecheng.framework.domain.course.Teachplan;
 import com.xuecheng.framework.domain.course.ext.CourseInfo;
 import com.xuecheng.framework.domain.course.ext.TeachplanNode;
 import com.xuecheng.framework.domain.course.request.CourseListRequest;
+import com.xuecheng.framework.domain.course.response.AddCourseResult;
 import com.xuecheng.framework.exception.ExceptionCast;
 import com.xuecheng.framework.model.response.CommonCode;
 import com.xuecheng.framework.model.response.QueryResponseResult;
 import com.xuecheng.framework.model.response.QueryResult;
 import com.xuecheng.framework.model.response.ResponseResult;
-import com.xuecheng.manage_course.dao.CourseBaseRepository;
-import com.xuecheng.manage_course.dao.CourseMapper;
-import com.xuecheng.manage_course.dao.TeachplanMapper;
-import com.xuecheng.manage_course.dao.TeachplanRepository;
+import com.xuecheng.manage_course.dao.*;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +36,8 @@ public class CourseService {
     TeachplanRepository teachplanRepository;
     @Autowired
     CourseBaseRepository courseBaseRepository;
+    @Autowired
+    CourseMarketRepository courseMarketRepository;
 
 
 
@@ -100,6 +101,82 @@ public class CourseService {
         return new QueryResponseResult<>(CommonCode.SUCCESS,courseInfoQueryResult);
 
 
+
+    }
+
+    //添加基础课程
+    @Transactional//添加事务
+    public AddCourseResult addCourseBase(CourseBase courseBase){
+        //课程状态默认为未发布
+        courseBase.setStatus("202001");
+        //保存
+        CourseBase save = courseBaseRepository.save(courseBase);
+        return new AddCourseResult(CommonCode.SUCCESS,save.getId());
+    }
+
+    //基本课程信息查询
+    public CourseBase getCourseBaseById(String courseId) throws RuntimeException {
+        Optional<CourseBase> byId = courseBaseRepository.findById(courseId);
+        if (byId.isPresent()){
+            CourseBase courseBase = byId.get();
+            return courseBase;
+        }
+        return null;
+    }
+    //修改基基本课程信息
+    @Transactional
+    public ResponseResult updateCourseBase(String courseId,CourseBase courseBase){
+        CourseBase one = this.getCourseBaseById(courseId);
+        if (one == null) {
+            //抛出异常..
+        }
+        //修改课程信息
+        one.setName(courseBase.getName());
+        one.setMt(courseBase.getMt());
+        one.setSt(courseBase.getSt());
+        one.setGrade(courseBase.getGrade());
+        one.setStudymodel(courseBase.getStudymodel());
+        one.setUsers(courseBase.getUsers());
+        one.setDescription(courseBase.getDescription());
+        CourseBase save = courseBaseRepository.save(one);
+        return new ResponseResult(CommonCode.SUCCESS);
+    }
+
+    //查询课程营销信息
+    public CourseMarket getCourseMarketById(String courseId){
+        Optional<CourseMarket> optional = courseMarketRepository.findById(courseId);
+        if(optional.isPresent()){
+            return optional.get();
+        }
+        return null;
+    }
+
+    //修改课程营销信息
+    @Transactional
+    public ResponseResult updateCourseMarket(String id,CourseMarket courseMarket){
+        //查询
+        CourseMarket  one= getCourseMarketById(id);
+        if(one!=null){//如果有
+            one.setCharge(courseMarket.getCharge());
+            one.setStartTime(courseMarket.getStartTime());//课程有效期，开始时间
+            one.setEndTime(courseMarket.getEndTime());//课程有效期，结束时间
+            one.setPrice(courseMarket.getPrice());
+            one.setQq(courseMarket.getQq());
+            one.setValid(courseMarket.getValid());
+            courseMarketRepository.save(one);
+        }else{
+        one=new CourseMarket();
+        BeanUtils.copyProperties(courseMarket,one);
+        //设置课程id
+        one.setId(id);
+        courseMarketRepository.save(one);
+        }
+
+        if(one==null){
+            return new ResponseResult(CommonCode.FAIL);
+        }
+
+        return  new ResponseResult(CommonCode.SUCCESS);
 
     }
 

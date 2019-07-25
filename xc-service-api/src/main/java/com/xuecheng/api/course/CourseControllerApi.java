@@ -1,15 +1,18 @@
 package com.xuecheng.api.course;
 
 import com.xuecheng.framework.domain.course.CourseBase;
+import com.xuecheng.framework.domain.course.CourseMarket;
 import com.xuecheng.framework.domain.course.Teachplan;
 import com.xuecheng.framework.domain.course.ext.CourseInfo;
 import com.xuecheng.framework.domain.course.ext.TeachplanNode;
 import com.xuecheng.framework.domain.course.request.CourseListRequest;
+import com.xuecheng.framework.domain.course.response.AddCourseResult;
 import com.xuecheng.framework.model.response.QueryResponseResult;
 import com.xuecheng.framework.model.response.ResponseResult;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import com.github.pagehelper.Page;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Api(value = "课程管理接口",description = "提供课程的增删改查")
 public interface CourseControllerApi {
@@ -25,4 +28,21 @@ public interface CourseControllerApi {
             int size,
             CourseListRequest courseListRequest//方便后面查询条件扩展
     );
+    @ApiOperation("添加基础课程")
+    public AddCourseResult addCourseBase(CourseBase courseBase);
+
+    @ApiOperation("获取课程基础信息")
+    public CourseBase getCourseBaseById(String courseId) throws RuntimeException;
+
+    @ApiOperation("更新课程基础信息")
+    public ResponseResult updateCourseBase(String id,CourseBase courseBase);
+
+    @ApiOperation("获取课程营销信息")
+    public CourseMarket getCourseMarketById(String courseId);
+
+    @ApiOperation("更新课程营销信息")
+    public ResponseResult updateCourseMarket(String id,CourseMarket courseMarket);
+
+
+
 }
