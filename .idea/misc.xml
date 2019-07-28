@@ -17,7 +17,15 @@
         <option value="$PROJECT_DIR$/test-rabbitMQ-producer/pom.xml" />
         <option value="$PROJECT_DIR$/xc-service-manage-cms-client/pom.xml" />
         <option value="$PROJECT_DIR$/xc-service-manage-course/pom.xml" />
+        <option value="$PROJECT_DIR$/test-fastdfs/pom.xml" />
+        <option value="$PROJECT_DIR$/xc-service-base-filesystem/pom.xml" />
+        <option value="$PROJECT_DIR$/xc-govern-center/pom.xml" />
       </list>
+    </option>
+    <option name="ignoredFiles">
+      <set>
+        <option value="$PROJECT_DIR$/xc-framework-model/xc-govern-center/pom.xml" />
+      </set>
     </option>
   </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="false" project-jdk-name="1.8" project-jdk-type="JavaSDK" />

@@ -16,7 +16,7 @@ import lombok.ToString;
 public class ResponseResult implements Response {
 
     //操作是否成功
-    boolean success = SUCCESS;
+    boolean success =    SUCCESS;
 
     //操作代码
     int code = SUCCESS_CODE;

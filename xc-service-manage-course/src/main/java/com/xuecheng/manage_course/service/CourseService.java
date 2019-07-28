@@ -4,6 +4,7 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.xuecheng.framework.domain.course.CourseBase;
 import com.xuecheng.framework.domain.course.CourseMarket;
+import com.xuecheng.framework.domain.course.CoursePic;
 import com.xuecheng.framework.domain.course.Teachplan;
 import com.xuecheng.framework.domain.course.ext.CourseInfo;
 import com.xuecheng.framework.domain.course.ext.TeachplanNode;
@@ -38,6 +39,8 @@ public class CourseService {
     CourseBaseRepository courseBaseRepository;
     @Autowired
     CourseMarketRepository courseMarketRepository;
+    @Autowired
+    CoursePicRepository coursePicRepository;
 
 
 
@@ -179,6 +182,48 @@ public class CourseService {
         return  new ResponseResult(CommonCode.SUCCESS);
 
     }
+
+    //保存课程图片，关联到课程
+    @Transactional
+    public ResponseResult saveCoursePic(String courseId, String pic){
+
+        //查询课程图片,有了就更新，没有就新添
+
+        CoursePic coursePic = null;
+        Optional<CoursePic> picOptional = coursePicRepository.findById(courseId);
+        if(picOptional.isPresent()){
+
+            coursePic = picOptional.get();
+        }
+        coursePic=new CoursePic();
+        coursePic.setCourseid(courseId);
+        coursePic.setPic(pic);
+        coursePicRepository.save(coursePic);
+        return new ResponseResult(CommonCode.SUCCESS);
+    }
+    //查询课程图片
+    public CoursePic findCoursepic(String courseId) {
+        CoursePic coursePic = null;
+        Optional<CoursePic> picOptional = coursePicRepository.findById(courseId);
+        if(picOptional.isPresent()){
+            coursePic=picOptional.get();
+            return coursePic;
+        }
+
+        return null;
+    }
+
+    //删除课程图片
+    @Transactional
+    public ResponseResult deleteCoursePic(String courseId) {
+        //执行删除，返回1表示删除成功，返回0表示删除失败
+        long result = coursePicRepository.deleteByCourseid(courseId);
+        if(result>0){
+            return new ResponseResult(CommonCode.SUCCESS);
+        }
+        return new ResponseResult(CommonCode.FAIL);
+    }
+
 
     //#################################
 //    得到新的根节点
